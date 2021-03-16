@@ -1,6 +1,6 @@
 from flask import Blueprint
 from flask import redirect, url_for, session, request, render_template
-from ..system_management.CustomerAccountManager import AccountManager
+from ..system_management import customer_manager
 from ..database.db_access import customer_access
 
 """All requests that are related to the management of a customer's account should come to this route"""

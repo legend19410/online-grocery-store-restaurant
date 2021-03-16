@@ -1,13 +1,9 @@
 from flask import Blueprint
 from flask import redirect, url_for, session, request, render_template
-from ..system_management.EmployeeAccountManager import EmployeeAccountManager
-from ..database.db_access import employee_access
+from ..system_management import employee_manager
 
 """All requests that are related to the management of an employee's account should come to this route"""
 manage_employee_account = Blueprint("manage_employee_account", __name__)
-
-"""create an object that manage all operations on an employee account"""
-employee_manager = EmployeeAccountManager(employee_access)
 
 """admin index page"""
 @manage_employee_account.route('/')

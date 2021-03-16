@@ -28,15 +28,15 @@ class CustomerAccess:
                         'telephone':customer.telephone, 'email':customer.email, 'gender':customer.gender,\
                         'password':customer.password, 'town':customer.town, 'parish':customer.parish}
 
-    def getCustomer(self, id):
+    # def getCustomer(self, id):
 
-        customer = Customer.query.filter_by(id=id).first()
-        try:
-            if customer.id == id:
-                return {"id": customer.id, 'firstName': customer.firstName, 'lastName': customer.lastName, \
-                        'telephone': customer.telephone, 'email': customer.email, 'gender': customer.gender, \
-                        'password': customer.password, 'town': customer.town, 'parish': customer.parish}
-            else:
-                return False
-        except:
-            return False
+    #     customer = Customer.query.filter_by(id=id).first()
+    #     try:
+    #         if customer.id == id:
+    #             return {"id": customer.id, 'firstName': customer.firstName, 'lastName': customer.lastName, \
+    #                     'telephone': customer.telephone, 'email': customer.email, 'gender': customer.gender, \
+    #                     'password': customer.password, 'town': customer.town, 'parish': customer.parish}
+    #         else:
+    #             return False
+    #     except:
+    #         return False

@@ -1,11 +1,9 @@
 from flask import Blueprint
 from flask import redirect, url_for, session, request
-from ..system_management.CartManager import CartManager
+from ..system_management import cart_manager
 from ..database.db_access import cart_access
 
 manage_cart = Blueprint("manage_cart", __name__)
-
-cart_manager = CartManager(cart_access)
 
 @manage_cart.route('/addToCart', methods=['POST'])
 def addToCart():

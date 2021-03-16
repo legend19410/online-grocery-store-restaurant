@@ -1,13 +1,9 @@
 from flask import Blueprint
 from flask import redirect, url_for, session, request, render_template
-from ..system_management.GroceryManager import GroceryManager
-from ..database.db_access import grocery_access
+from ..system_management import grocery_manager
 
 """This blueprint will handle all requests related to the management of groceries"""
 manage_groceries = Blueprint("manage_groceries", __name__)
-
-"""object used to manipulate all grocery operations"""
-grocery_manager = GroceryManager(grocery_access)
 
 @manage_groceries.route('/create_grocery')
 def create_grocery():

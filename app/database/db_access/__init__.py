@@ -10,10 +10,10 @@ from .OrderGroceriesAccess import OrderGroceriesAccess
 from .PaymentAccess import PaymentAccess
 
 branch_access = BranchAccess()
-cart_access = CartAccess(GroceryAccess(), OrderAccess(), CustomerAccess)
 customer_access = CustomerAccess()
 employee_access = EmployeeAccess
 grocery_access = GroceryAccess()
 order_access = OrderAccess()
+cart_access = CartAccess(grocery_access, order_access, customer_access)
 order_groceries_access = OrderGroceriesAccess()
 payment_access = PaymentAccess()
