@@ -45,9 +45,19 @@ class RatingAccess:
                 return False
         except:
             return False
+
+    def getAllMyRating(self,custId):
+
+        ratings = Rating.query.filter_by(cust_id=custId).all()
+        try:
+            if ratings[0].cust_id:
+                return ratings
+        except:
+            return False
         
     def getRatingDF(self):
         db_connection = create_engine(os.environ.get('PYMYSQL_DATABASE_URI') or 'mysql+pymysql://root:''@localhost:3306/food_delivery')
         df = pd.read_sql('SELECT * FROM rating', con=db_connection)
         print(df)
         return df
+
