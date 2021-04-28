@@ -14,7 +14,7 @@ class RatingManager:
             if rating:
                 return self.__getRatingDetails(rating)
             else:
-                return {'msg':'operation could not be completed'}
+                return {'msg':'operation could not be completed because customer or grocery does not exist'}
         except:
             return {'msg':'failed request'}
 

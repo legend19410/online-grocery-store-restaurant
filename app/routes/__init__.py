@@ -1,7 +1,9 @@
+import os
 from app import app
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask import session
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 
 """import blueprints (routes) for different sections of the system"""
 from .CustomerRoute import manage_customer_account
@@ -32,16 +34,16 @@ app.register_blueprint(manage_order, url_prefix="/manage_order")
 """serves the index page for customers"""
 @app.route('/')
 @app.route('/index')
+@jwt_required()
 def index():
+    user = get_jwt_identity()
     # if customer is logged in return home page with customer data. Otherwise, return just the home page
-    if 'cust_id' in session:
-        customer = account_manager.getCustomer(session['cust_id'])
-        if customer:
-            return {"id": customer['id'], 'firstName': customer['first_name'], 'lastName': customer['last_name'], \
-                    'telephone': customer['telephone'], 'email': customer['email'], 'gender': customer['gender'], \
-                    'town': customer['town'], 'parish': customer['parish']}
-        else:
-            return {'error': 'no customer data found!'}
+    if user and (not 'role' in user):
+        return user
     else:
-        return render_template("customerViews/index.html")
+        return {'msg': 'you are not logged in as a customer', 'error': 'auth-0001'}, 401
 
+@app.route('/uploads/<filename>')
+def get_image(filename):
+    root_dir = os.getcwd()
+    return send_from_directory(os.path.join(root_dir,app.config['UPLOAD_FOLDER']), filename)

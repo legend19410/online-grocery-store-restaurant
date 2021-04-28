@@ -6,147 +6,170 @@ class OrderManager:
         self.orderGroceriesAccess = orderGroceries
         self.paymentAccess = paymentAccess
     
-    def scheduleOrder(self, request):
+    def scheduleOrder(self, request, user):
         
-        try:
-            getParam = self.getRequestType(request)
-            deliveryDate = getParam('date')
-            deliveryTown = getParam('town')
-            deliveryParish = getParam('parish')
-            orderId = getParam('order_id')
-            
-            order = self.orderAccess.scheduleDelivery(orderId,deliveryDate,deliveryTown,deliveryParish)
-            if order:
-                return {'order_id':str(order.id), 'order_date':str(order.orderDate), 'status':str(order.status), \
-                        'customer_id':str(order.customer_id), 'customer':(order.customer.first_name + " "+ \
-                        order.customer.last_name), 'delivery_date':str(order.deliveryDate), 'delivery_town':str(order.deliveryTown),\
-                        'delivery_parish':str(order.deliveryParish)}
-            else:
-                return {'msg':'issues with scheduling order'}
-            
-        except:
-            return  {'msg':'failed request'}
-
-    def checkOutOrder(self,session, request):
-
-        # try:
-            getParam = self.getRequestType(request)
-            orderId = getParam('order_id')
-            if 'admin_id' in session:
-                empId = session['admin_id']
-            if 'staff_id' in session:
-                empId = session['staff_id']
-    
-            if empId:
-                order = self.orderAccess.checkoutOrder(orderId, empId)
-                if order:
-                    return {'order_id':str(order.id), 'order_date':str(order.orderDate), 'status':str(order.status), \
-                        'customer_id':str(order.customer_id), 'customer':(order.customer.first_name + " "+ \
-                        order.customer.last_name), 'delivery_date':str(order.deliveryDate), 'delivery_town':str(order.deliveryTown),\
-                        'delivery_parish':str(order.deliveryParish),'checkout_by':(order.employee.first_name + " "+ \
-                        order.employee.last_name)}
-                else:
-                    return {'msg':'issues with checking out order'}
-            else:
-                return {'msg':'no order found'}
-        # except:
-        #     return {'msg':'failed request'}
+        getParam = self.getRequestType(request)
+        deliverydate = getParam('date')
+        orderId = getParam('order_id')
+        custId = user['cust_id']
         
-    def getOrder(self, request):
-        try:
-            getParam = self.getRequestType(request)
-            orderId = getParam('order_id')
+        order = self.orderAccess.scheduleDelivery(orderId,deliverydate,int(custId))
+        if order:
+            empFname = order.employee
+            empLname = order.employee
+            if empFname:
+                empName = (empFname.first_name + " " + empLname.last_name)
+            else:
+                empName = 'False'
+            return self.__getOrderDetails(order,empName)
+        return False 
             
-            order = self.orderAccess.getOrderById(orderId)
+
+    def checkOutOrder(self,user, request):
+
+        getParam = self.getRequestType(request)
+        orderId = getParam('order_id')
+
+        empId = user['emp_id']
+
+        if orderId:
+            order = self.orderAccess.checkoutOrder(orderId, empId)
             if order:
                 empFname = order.employee
                 empLname = order.employee
                 if empFname:
-                    empName = ( empFname.first_name+ " " +empLname.last_name )
+                    empName = (empFname.first_name + " " + empLname.last_name)
                 else:
                     empName = 'False'
-    
-                return {'order_id': str(order.id), 'order_date': str(order.orderDate), 'status': str(order.status), \
-                        'customer_id': str(order.customer_id), 'customer': (order.customer.first_name + " " + \
-                                                                            order.customer.last_name),
-                        'delivery_date': str(order.deliveryDate), 'delivery_town': str(order.deliveryTown), \
-                        'delivery_parish': str(order.deliveryParish), 'checkout_by': empName}
+                return self.__getOrderDetails(order,empName)
             else:
-                return {'msg':'no order found'}
-        except:
-            return {'msg':'failed request'}
+                return order
+        return False
         
-    def getOrders(self):
-        try:
-            orders = self.orderAccess.getOrders()
-            response = {}
-            if orders:
-                for order in orders:
-                    empFname = order.employee
-                    empLname = order.employee
-                    if empFname:
-                        empName = (empFname.first_name + " " + empLname.last_name)
-                    else:
-                        empName = 'False'
-                    response[str(order.id)] = {'order_id': str(order.id), 'order_date': str(order.orderDate),\
-                                               'status': str(order.status),'customer_id': str(order.customer_id),\
-                                               'customer': (order.customer.first_name + " " + \
-                                                order.customer.last_name),'delivery_date': str(order.deliveryDate),\
-                                               'delivery_town': str(order.deliveryTown), 'delivery_parish': \
-                                                str(order.deliveryParish), 'checkout_by': empName}
-                return response
+    def getOrder(self, orderId):
+        # getParam = self.getRequestType(request)
+        # orderId = getParam('order_id')
+        
+        order = self.orderAccess.getOrderById(orderId)
+        if order:
+            empFname = order.employee
+            empLname = order.employee
+            if empFname:
+                empName = ( empFname.first_name+ " " +empLname.last_name )
             else:
-                return {'msg':'no order found'}
-        except:
-            return {'msg':'failed request'}
+                empName = 'False'
 
-    def getTotalOnOrder(self):
-        return self.orderGroceriesAccess.getTotalOnOrder(5)
+            return {'summary':self.__getOrderDetails(order,empName), 'groceries':self.__getOrderItemsDetails(order.id)}
+        return False
+        
+    def getOrders(self, request, cust_id=None):
+        getParam = self.getRequestType(request)
+
+        if cust_id is None:
+            cust_id = getParam('cust_id')
+            
+        status = getParam('status')
+
+        order_start_date = getParam('order_start_date')
+        if order_start_date is not None:
+            order_start_date = order_start_date + " 00:00:00"
+        
+        order_end_date = getParam('order_end_date')
+        if order_end_date is not None:
+            order_end_date = order_end_date+" 23:59:59"
+
+        delivery_start_date = getParam('delivery_start_date')
+        if delivery_start_date is not None:
+            delivery_start_date = delivery_start_date + " 00:00:00"
+        
+        delivery_end_date = getParam('delivery_end_date')
+        if delivery_end_date is not None:
+            delivery_end_date = delivery_end_date + " 23:59:59"
+
+        delivery_town = getParam('delivery_town')
+        delivery_parish = getParam('delivery_parish')
+
+
+        orders = self.orderAccess.getOrders(cust_id, status, order_start_date, order_end_date,\
+                                                    delivery_start_date, delivery_end_date, delivery_town,\
+                                                    delivery_parish)
+
+        response = []
+        if orders:
+            for order in orders:
+                empFname = order.employee
+                empLname = order.employee
+                if empFname:
+                    empName = (empFname.first_name + " " + empLname.last_name)
+                else:
+                    empName = 'False'
+                response.append(self.__getOrderDetails(order,empName))
+
+        return response
+
+    def getTotalOnOrder(self, order_id):
+        return self.orderGroceriesAccess.getTotalOnOrder(order_id)
     
-    def recordPayment(self,session,request):
-        try:
-            getParam = self.getRequestType(request)
-            orderId = int(getParam('order_id'))
-            amountTendered = float(getParam('amount_tendered'))
-            if 'admin_id' in session:
-                empId = session['admin_id']
-            if 'staff_id' in session:
-                empId = session['staff_id']   
-            payment = self.paymentAccess.recordPayment(orderId, empId, amountTendered)
-            if payment:
-                return {'order_id': payment.order_id,'collected_by':payment.recorded_by, 'payment_date': str(payment.payment_date),\
-                        'amount_tendered':str(payment.amount_tendered),'change':str(payment.change), 'customer':(payment.order.customer.first_name + " "+ \
-                        payment.order.customer.last_name) }
+    def recordPayment(self,user,request):
+        getParam = self.getRequestType(request)
+        orderId = int(getParam('order_id'))
+        amountTendered = float(getParam('amount_tendered'))
+        empId = user['emp_id']
+        payment = self.paymentAccess.recordPayment(orderId, empId, amountTendered)
+        if payment:
+            return {'order_id': payment.order_id,'collected_by':payment.recorded_by, 'payment_date': str(payment.payment_date),\
+                    'amount_tendered':str(payment.amount_tendered),'change':str(payment.change), 'customer':(payment.order.customer.first_name + " "+ \
+                    payment.order.customer.last_name) }
 
-            else:
-                return {'msg':'payment not recorded'}
-        except:
-            return {'msg':' failed request'}
+        return False
 
     def getSchedule(self):
-        try:
-            orders = self.orderAccess.getSchedule()
-            response = {}
-            if orders:
-                for order in orders:
-                    empFname = order.employee
-                    empLname = order.employee
-                    if empFname:
-                        empName = (empFname.first_name + " " + empLname.last_name)
-                    else:
-                        empName = 'False'
-                    response[str(order.id)] = {'order_id': str(order.id), 'order_date': str(order.orderDate),\
-                                               'status': str(order.status),'customer_id': str(order.customer_id),\
+        orders = self.orderAccess.getSchedule()
+        response = []
+        if orders:
+            for order in orders:
+                empFname = order.employee
+                empLname = order.employee
+                if empFname:
+                    empName = (empFname.first_name + " " + empLname.last_name)
+                else:
+                    empName = 'False'
+                response.append(self.__getOrderDetails(order,empName))
+        return response
+
+
+    def __getOrderDetails(self, order,empName):
+        return {'order_id': str(order.id), 'order_date': str(order.orderdate), \
+                                               'status': str(order.status), 'customer_id': str(order.customer_id), \
                                                'customer': (order.customer.first_name + " " + \
-                                                order.customer.last_name),'delivery_date': str(order.deliveryDate),\
+                                                            order.customer.last_name),\
+                                               'delivery_date': str(order.deliverydate), \
                                                'delivery_town': str(order.deliveryTown), 'delivery_parish': \
-                                                str(order.deliveryParish), 'checkout_by': empName}
-                return response
-            else:
-                return {'msg':'no order found'}
-        except:
-            return {'msg':'failed request'}
-        
+                                                   str(order.deliveryParish), 'checkout_by': empName,\
+                                                'total':self.orderAccess.getTotalOnOrder(order.id),\
+                                                'delivery_cost':self.orderAccess.getDeliveryCost(int(order.id))}
+
+    def __getOrderItemsDetails(self,orderId):
+        orderItems = self.orderAccess.getItemsInOrder(orderId)
+        # print(type(orderItems))
+        response = []
+        if orderItems:
+            for grocery in orderItems:
+                # print(type(grocery))
+                cost_before_tax = grocery.quantity * grocery.groceries.cost_per_unit
+                GCT = self.orderAccess.getTax(grocery.grocery_id, 'GCT') * grocery.quantity
+                SCT = self.orderAccess.getTax(grocery.grocery_id, 'SCT') * grocery.quantity
+                total = float(cost_before_tax) + float(GCT) + float(SCT)
+                total_weight = str(grocery.quantity * grocery.groceries.grams_per_unit) + " grams"
+                response.append({'grocery_id': str(grocery.grocery_id), \
+                                                  'quantity': str(grocery.quantity), \
+                                                  'cost_before_tax': str(cost_before_tax), \
+                                                  'name': grocery.groceries.name, \
+                                                  'total_weight': total_weight, 'GCT': str(GCT), 'SCT': str(SCT), \
+                                                  'total': str(total)})
+        # print(response)
+        return response
+
     def getRequestType(self, request):
         if request.method == 'GET':
             return request.args.get
