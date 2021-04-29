@@ -6,6 +6,7 @@
 
 2) login:
     https://infinite-beach-27814.herokuapp.com/manage_customer_account/login
+
 3) update account:
     https://infinite-beach-27814.herokuapp.com/manage_customer_account/update_account
 

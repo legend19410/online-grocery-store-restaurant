@@ -19,6 +19,26 @@ def rate_grocery():
     else:
         return redirect(url_for('index'))
 
+@manage_rating.route('/get_all_rating', methods=['POST','GET'])
+@jwt_required()
+def get_all_rating():
+    user = get_jwt_identity()
+    if user and (not 'role' in user):
+        ratings = rating_manager.getAllMyRating(user)
+        return ratings
+    else:
+        return redirect(url_for('index'))
+
+# @manage_rating.route('/rate_grocery', methods=['POST','GET'])
+# @jwt_required()
+# def rate_grocery():
+#     user = get_jwt_identity()
+#     if user and (not 'role' in user):
+#         rating = rating_manager.rateGrocery(user, request)
+#         return rating
+#     else:
+#         return redirect(url_for('index'))
+#
 @manage_rating.route('/data_frame', methods=['POST','GET'])
 @jwt_required()
 def data_frame():
