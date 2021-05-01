@@ -1,15 +1,15 @@
 from ... import db
 from ..Models import Customer
 from sqlalchemy.exc import IntegrityError
+from werkzeug.security import check_password_hash
 
 class CustomerAccess:
 
     """retrieve a customer record from the database given their email and password"""
     def login(self, email, password):
         customer = Customer.query.filter_by(email=email).first()
-        if customer:
-            if customer.email == email and customer.password == password:
-                return customer
+        if customer is not None and check_password_hash(customer.password, password):
+            return customer
         else:
             return False
 

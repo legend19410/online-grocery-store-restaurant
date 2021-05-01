@@ -31,19 +31,28 @@ app.register_blueprint(manage_rating, url_prefix="/manage_rating")
 app.register_blueprint(manage_order, url_prefix="/manage_order")
 
 
-"""serves the index page for customers"""
-@app.route('/')
-@app.route('/index')
-@jwt_required()
-def index():
-    user = get_jwt_identity()
-    # if customer is logged in return home page with customer data. Otherwise, return just the home page
-    if user and (not 'role' in user):
-        return user
-    else:
-        return {'msg': 'you are not logged in as a customer', 'error': 'auth-0001'}, 401
+
+"""serves the index page for users"""
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def index(path):
+    # return app.send_static_file('index.html')
+    return render_template('index.html')
+
+
 
 @app.route('/uploads/<filename>')
 def get_image(filename):
     root_dir = os.getcwd()
     return send_from_directory(os.path.join(root_dir,app.config['UPLOAD_FOLDER']), filename)
+
+
+@app.after_request
+def add_header(response):
+    """
+    Add headers to both force latest IE rendering engine or Chrome Frame,
+    and also tell the browser not to cache the rendered page.
+    """
+    response.headers['X-UA-Compatible'] = 'IE=Edge,chrome=1'
+    response.headers['Cache-Control'] = 'public, max-age=0'
+    return response

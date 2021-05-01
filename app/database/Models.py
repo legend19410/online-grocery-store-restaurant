@@ -2,6 +2,7 @@ from .. import db
 from flask import Flask 
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from werkzeug.security import generate_password_hash
 
 class Customer(db.Model):
     __tablename__ = 'customer'
@@ -11,7 +12,7 @@ class Customer(db.Model):
     telephone = db.Column(db.String(11), nullable=False)
     email = db.Column(db.String(45), nullable=False, unique=True)
     gender = db.Column(db.String(45), nullable=False)
-    password = db.Column(db.String(45), nullable=False)
+    password = db.Column(db.String(256), nullable=False)
     town = db.Column(db.String(45), nullable=False)
     parish = db.Column(db.String(45), nullable=False)
 
@@ -22,6 +23,16 @@ class Customer(db.Model):
 
     #ratings associated many to many
     grocery_ratings = db.relationship("Rating", back_populates="customer_ratings", cascade="all,delete")
+
+    def __init__(self, first_name, last_name, telephone, email, gender, password, town, parish):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.telephone = telephone
+        self.email = email
+        self.password = generate_password_hash(password, method='pbkdf2:sha256:310000', salt_length=256)
+        self.town = town
+        self.parish = parish
+        
 
 class Employee(db.Model):
     __tablename__ = 'employee'
