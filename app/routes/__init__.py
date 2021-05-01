@@ -40,7 +40,6 @@ def index(path):
     return render_template('index.html')
 
 
-
 @app.route('/uploads/<filename>')
 def get_image(filename):
     root_dir = os.getcwd()

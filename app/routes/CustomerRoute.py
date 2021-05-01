@@ -32,6 +32,7 @@ def signup():
     finally:
         return reponse
 
+
 @manage_customer_account.route('/login', methods=["POST"])
 def login():
     try:
@@ -85,7 +86,8 @@ def update_account():
             response = {'msg': '', 'error':'internal server error'}, 500
         finally:
             return response
-    return redirect(url_for('index'))
+    return {'msg': 'you are not logged in as a customer', 'error': 'auth-0001'}, 401
+
 
 @manage_customer_account.route('/get_customer', methods=["GET"])
 @jwt_required()
@@ -103,9 +105,7 @@ def get_customer():
             response = {'msg':'','error':'ise-0001'}, 500
         finally:
             return response
-            
-    else:
-        return redirect(url_for('index'))
+    return {'msg': 'you are not logged in as a customer', 'error': 'auth-0001'}, 401
 
 @manage_customer_account.route('/get_recommended_groceries', methods=["GET","POST"])
 @jwt_required()
@@ -122,9 +122,7 @@ def get_recommended_groceries():
             response = {'msg': '', 'error': 'ise-0001'}, 500
         finally:
             return reponse
-
-    else:
-        return redirect(url_for('index'))
+    return {'msg': 'you are not logged in as a customer', 'error': 'auth-0001'}, 401
     
     
 @manage_customer_account.route('/get_my_orders', methods=["GET"])
@@ -144,9 +142,7 @@ def get_my_orders():
             response = {'msg': '', 'error':'ise-0001'}, 500
         finally:
             return response
-    
-    else:
-        return redirect(url_for('index'))
+    return {'msg': 'you are not logged in as a customer', 'error': 'auth-0001'}, 401
     
 @manage_customer_account.route('/cancel_order/<order_id>', methods=["GET","POST"])
 @jwt_required()
@@ -164,8 +160,7 @@ def cancel_order(order_id):
             response = {'msg':'', 'error':'ise-0001'}, 500
         finally:
             return response
-    else:
-        return redirect(url_for('index'))
+    return {'msg': 'you are not logged in as a customer', 'error': 'auth-0001'}, 401
 
 
 @manage_customer_account.route('/set_delivery_location/<order_id>', methods=["POST"])
@@ -185,5 +180,4 @@ def set_delivery_location(order_id):
             response = response = {'msg':'', 'error':'ise-0001'}, 500
         finally:
             return response
-    else:
-        return redirect(url_for('index'))
+    return {'msg': 'you are not logged in as a customer', 'error': 'auth-0001'}, 401

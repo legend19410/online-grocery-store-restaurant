@@ -21,6 +21,7 @@ def index():
     else:
         return {'msg':'you are not logged in!', 'error':'auth-001'}, 401
 
+
 @manage_employee_account.route('/login', methods=["POST", "GET"])
 def login():
     employee = employee_manager.login(request)
@@ -103,6 +104,7 @@ def delete_employee():
             return {'msg': 'only admin can perform this task'}
     else:
         return {'msg': 'you are not logged in as an employee'}
+
     
 @manage_employee_account.route('/logout', methods=["GET", "POST"])
 def logout():
