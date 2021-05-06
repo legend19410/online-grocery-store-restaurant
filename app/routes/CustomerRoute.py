@@ -38,8 +38,10 @@ def login():
     try:
         customer = customer_manager.login(request)
         if customer:
-            token = create_access_token(identity=customer)
-            response = {'msg':'', 'data': {"token": token, "customer":customer}}, 200
+            access_token = create_access_token(identity=customer)
+            refresh_token = create_refresh_token(identity=customer)
+
+            response = {'msg':'', 'data': {"access_token": access_token, "refresh_token"=refresh_token, "customer":customer}}, 200
         else:
             response = {
                 'msg':'Incorrect email or password', 

@@ -46,6 +46,16 @@ def get_image(filename):
     return send_from_directory(os.path.join(root_dir,app.config['UPLOAD_FOLDER']), filename)
 
 
+# We are using the `refresh=True` options in jwt_required to only allow
+# refresh tokens to access this route.
+@app.route("/refresh", methods=["POST"])
+@jwt_required(refresh=True)
+def refresh():
+    identity = get_jwt_identity()
+    access_token = create_access_token(identity=identity)
+    return jsonify(access_token=access_token)
+
+
 @app.after_request
 def add_header(response):
     """
