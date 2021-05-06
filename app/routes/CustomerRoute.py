@@ -41,7 +41,7 @@ def login():
             access_token = create_access_token(identity=customer)
             refresh_token = create_refresh_token(identity=customer)
 
-            response = {'msg':'', 'data': {"access_token": access_token, "refresh_token"=refresh_token, "customer":customer}}, 200
+            response = {'msg':'', 'data': {"access_token": access_token, "refresh_token":refresh_token, "customer":customer}}, 200
         else:
             response = {
                 'msg':'Incorrect email or password', 
@@ -60,9 +60,10 @@ def login():
 @jwt_required()
 def logout():
     user = get_jwt_identity()
-    # print(user)
     try:
         if user:
+            jti = get_jwt()["jti"]
+            jwt_redis_blocklist.set(jti, "", ex=app.config["JWT_ACCESS_TOKEN_EXPIRES"])
             # return {'msg' : 'logout success', 'data':{}}, 200
             return redirect(url_for('index'))
         return {'msg': 'user cannot be identified', 'error': 'jwt-0001'}, 401

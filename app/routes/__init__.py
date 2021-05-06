@@ -3,7 +3,7 @@ from app import app
 from flask import Flask, render_template, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask import session
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
 
 """import blueprints (routes) for different sections of the system"""
 from .CustomerRoute import manage_customer_account
@@ -53,13 +53,12 @@ def get_image(filename):
 def refresh():
     identity = get_jwt_identity()
     access_token = create_access_token(identity=identity)
-    return jsonify(access_token=access_token)
+    return {"access_token": access_token}, 200
 
 
 @app.after_request
 def add_header(response):
-    """
-    Add headers to both force latest IE rendering engine or Chrome Frame,
+    """  Add headers to both force latest IE rendering engine or Chrome Frame,
     and also tell the browser not to cache the rendered page.
     """
     response.headers['X-UA-Compatible'] = 'IE=Edge,chrome=1'
