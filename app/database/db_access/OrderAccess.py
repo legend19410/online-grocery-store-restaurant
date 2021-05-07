@@ -1,4 +1,4 @@
-from ... import db
+from ... import db, encrypter
 from datetime import datetime, timedelta, timezone
 from ..Models import Order
 from ..Models import OrderGroceries
@@ -12,7 +12,7 @@ import time
 class OrderAccess:
 
     def createOrder(self, custId):
-        order = Order(customer_id=custId)
+        order = Order(custId)
         db.session.add(order)
         db.session.commit()
         return self.getOrderById(order.id)
@@ -38,7 +38,7 @@ class OrderAccess:
     def updateStatus(self,orderId, status):
         order = self.getOrderById(orderId)
         if order:
-            order.status = status
+            order.status = encrypter.encrypt(status)
             db.session.commit()
             return True
         else:
@@ -62,14 +62,15 @@ class OrderAccess:
         order = self.getOrderById(orderId)
         if order:
             order.checkout_by = employee
-            order.status = 'CHECKED OUT'
+            order.status = encrypter.encrypt('checked out')
             db.session.commit()
             return  order
         else:
             return False
 
     def getSchedule(self):
-        orders = Order.query.filter(or_(Order.status=='PENDING',Order.status=='CHECKED OUT')).all()
+        orders = Order.query.filter(or_(Order.status==encrypter.encrypt('pending'),\
+                                        Order.status==encrypter.encrypt('checked out'))).all()
         try:
             if orders[0].id:
                 return orders
@@ -78,11 +79,11 @@ class OrderAccess:
 
     def getOrders(self,custId=None, status=None, min_order_timestamp=None,\
                             max_order_timestamp=None, min_delivery_timestamp=None,\
-                            max_delivery_timestamp=None, delivery_town=None,delivery_parish=None):
+                            max_delivery_timestamp=None, delivery_street=None,delivery_town=None,delivery_parish=None):
         
         if status is None:
             status = ''
-        status = '%{}%'.format(status)
+        status = encrypter.encrypt('%{}%'.format(status))
 
         if min_order_timestamp is None:
             min_order_timestamp = datetime(1970, 1, 1,tzinfo=timezone.utc)
@@ -103,25 +104,31 @@ class OrderAccess:
             delivery_range_provided = None
         else:
             max_delivery_timestamp = datetime.strptime(max_delivery_timestamp, '%Y-%m-%d %H:%M:%S')
-
+        
+        street_provided = ''
+        if delivery_street is None:
+            street_provided = None
+            delivery_street = ''
+        delivery_street = encrypter.encrypt('%{}%'.format(delivery_street))
 
         town_provided = ''
         if delivery_town is None:
             town_provided = None
             delivery_town = ''
-        delivery_town = '%{}%'.format(delivery_town)
+        delivery_town = encrypter.encrypt('%{}%'.format(delivery_town))
 
         parish_provided = ''
         if delivery_parish is None:
             parish_provided = None
             delivery_parish = ''
-        delivery_parish = '%{}%'.format(delivery_parish)
+        delivery_parish = encrypter.encrypt('%{}%'.format(delivery_parish))
 
         if custId is not None:
             orders = Order.query.filter(
                 and_(
                     Order.customer_id==custId,\
                     Order.status.ilike(status),\
+                    or_(Order.deliverystreet.ilike(delivery_street), Order.deliverystreet == street_provided),\
                     or_(Order.deliverytown.ilike(delivery_town), Order.deliverytown == town_provided),\
                     or_(Order.deliveryparish.ilike(delivery_parish), Order.deliveryparish == parish_provided),\
                     and_(Order.orderdate >= min_order_timestamp, Order.orderdate <= max_order_timestamp),\
@@ -135,6 +142,7 @@ class OrderAccess:
             orders = Order.query.filter(
                 and_(
                     Order.status.ilike(status),\
+                    or_(Order.deliverystreet.ilike(delivery_street), Order.deliverystreet == street_provided),\
                     or_(Order.deliverytown.ilike(delivery_town), Order.deliverytown == town_provided),\
                     or_(Order.deliveryparish.ilike(delivery_parish), Order.deliveryparish == parish_provided),\
                     and_(Order.orderdate >= min_order_timestamp, Order.orderdate <= max_order_timestamp),\
@@ -154,13 +162,14 @@ class OrderAccess:
 
     def getCustomerPendingOrder(self,custId):
         orders = Order.query.filter(and_(Order.customer_id==int(custId),\
-                                            or_(Order.status=='PENDING',Order.status=='CHECKED OUT'))).all()
+                                            or_(Order.status==encrypter.encrypt('pending'),\
+                                                Order.status==encrypter.encrypt('checked out')))).all()
         try:
             if orders[0].id:
                 # orders = [order for order in orders if order.customer_id == custId]
                 newOrder = []
                 for order in orders:
-                    if order.status == 'PENDING':
+                    if encrypter.decrypt(order.status) == 'pending':
                         newOrder.append(order)
                 if not newOrder == []:
                     return newOrder
@@ -175,19 +184,20 @@ class OrderAccess:
         order = self.getOrderById(orderId)
         if order:
             if order.customer_id == custId:
-                self.updateStatus(orderId,'CANCELED')
+                self.updateStatus(orderId,'canceled')
                 return order
             else:
                 return  False
         else:
             return False
 
-    def setDeliveryLocation(self, custId, orderId, parish, town):
+    def setDeliveryLocation(self, custId, orderId, street, parish, town):
         order = self.getOrderById(orderId)
         if order:
             if order.customer_id == custId:
-                order.deliveryparish = parish
-                order.deliverytown = town
+                order.deliverystreet = encrypter.encrypt(street)
+                order.deliveryparish = encrypter.encrypt(parish)
+                order.deliverytown = encrypter.encrypt(town)
                 db.session.commit()
                 return order
             else:

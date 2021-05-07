@@ -9,16 +9,19 @@ class EmployeeAccountManager:
             getParam = self.getRequestType(request)
             firstName = getParam('first_name')
             lastName = getParam('last_name')
+            telephone = getParam('telephone')
             email = getParam('email')
             password = getParam('password')
-            address = getParam('address')
+            street = getParam('street')
+            town = getParam('town')
+            parish = getParam('parish')
             role = getParam('role')
             salary = getParam('salary')
 
             """sanitize and validate details"""
 
             """create account with sanitized data"""
-            employee = self.employee_access.registerEmployee(firstName, lastName, email, password, address, role, float(salary))
+            employee = self.employee_access.registerEmployee(firstName, lastName, telephone, email, password, street, town, parish, role, float(salary))
             if employee:
                 return self.__getEmployeeDetails(employee)
             else:

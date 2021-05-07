@@ -1,4 +1,4 @@
-
+from app import encrypter
 class AccountManager:
 
     def __init__(self, customer_access, MLManager, orderAccess):
@@ -22,7 +22,7 @@ class AccountManager:
         """sanitize and verify details"""
 
         """create account with sanitized data"""
-        customer = self.customer_access.registerCustomer(firstName, lastName, telephone, email, gender, password, town, parish)
+        customer = self.customer_access.registerCustomer(firstName, lastName, telephone, email, password, town, parish)
         if customer:
             return True
         return False
@@ -73,17 +73,18 @@ class AccountManager:
 
     def setDeliveryLocation(self, user, request, order_id):
         getParam = self.getRequestType(request)
+        street = getParam('street')
         parish = getParam('parish')
         town = getParam('town')
         cust_id = user['cust_id']
         
 
-        order = self.orderAccess.setDeliveryLocation(int(cust_id),int(order_id),parish,town)
+        order = self.orderAccess.setDeliveryLocation(int(cust_id),int(order_id),street,parish,town)
         if order:
-            empFname = order.employee
-            empLname = order.employee
-            if empFname:
-                empName = (empFname.first_name + " " + empLname.last_name)
+            emp = order.employee
+
+            if emp:
+                empName = (encrypter.decrypt(emp.first_name) + " " + encrypter.decrypt(emp.last_name))
             else:
                 empName = 'False'
             return self.__getOrderDetails(order,empName)
@@ -106,10 +107,10 @@ class AccountManager:
         
         cancelled_order = self.orderAccess.cancelOrder(int(custId), orderId)
         if cancelled_order:
-            empFname = cancelled_order.employee
-            empLname = cancelled_order.employee
-            if empFname:
-                empName = (empFname.first_name + " " + empLname.last_name)
+            emp = cancelled_order.employee
+ 
+            if emp:
+                empName = (encrypter.decrypt(emp.first_name) + " " + encrypter.decrypt(emp.last_name))
             else:
                 empName = 'False'
             return self.__getOrderDetails(cancelled_order, empName)
@@ -148,10 +149,9 @@ class AccountManager:
         if orders:
             print('Orders',orders)
             for order in orders:
-                empFname = order.employee
-                empLname = order.employee
-                if empFname:
-                    empName = (empFname.first_name + " " + empLname.last_name)
+                emp = order.employee
+                if emp:
+                    empName = (encrypter.decrypt(empFname.first_name) + " " + encrypter.decrypt(empLname.last_name))
                 else:
                     empName = 'False'
                 response.append(
@@ -163,38 +163,35 @@ class AccountManager:
                 )
         return response
 
-    def getMyPendingOrders(self, user):
-        cust_id = user['cust_id']
-        response = {}
-        orders = self.orderAccess.getCustomerPendingOrder(cust_id)
-        if orders:
-            for order in orders:
-                empFname = order.employee
-                empLname = order.employee
-                if empFname:
-                    empName = (empFname.first_name + " " + empLname.last_name)
-                else:
-                    empName = 'False'
-                response[str(order.id)] = self.__getOrderDetails(order, empName), self.__getOrderItemsDetails(order.id)
-            return response
-        return response
 
 
     def __getCustomerDetails(self, customer):
 
-        return {"cust_id": str(customer.id), 'first_name': customer.first_name, 'last_name': customer.last_name, \
-                        'telephone': customer.telephone, 'email': customer.email, 'gender': customer.gender, \
-                        'town': customer.town, 'parish': customer.parish}
+        return {
+            "cust_id": str(customer.id),
+            'first_name': encrypter.decrypt(customer.first_name),
+            'last_name': encrypter.decrypt(customer.last_name),
+            'telephone': encrypter.decrypt(customer.telephone),
+            'email': encrypter.decrypt(customer.email),
+            'town': encrypter.decrypt(customer.town),
+            'parish': encrypter.decrypt(customer.parish)
+        }
 
     def __getOrderDetails(self, order,empName):
-        return {'order_id': str(order.id), 'order_date': str(order.orderdate), \
-                                               'status': str(order.status), 'customer_id': str(order.customer_id), \
-                                               'customer': (order.customer.first_name + " " + \
-                                                            order.customer.last_name),\
-                                               'delivery_date': str(order.deliverydate), \
-                                               'delivery_town': str(order.deliverytown), 'delivery_parish': \
-                                                   str(order.deliveryparish), 'checkout_by': empName,\
-                                                'total':self.orderAccess.getTotalOnOrder(order.id)}
+        return {
+            'order_id': str(order.id), 
+            'order_date': str(order.orderdate),
+            'status': encrypter.decrypt(str(order.status)), 
+            'customer_id': str(order.customer_id),
+            'customer': (encrypter.decrypt(order.customer.first_name) + " " + encrypter.decrypt(order.customer.last_name)),
+            'delivery_date': str(order.deliverydate),
+            'delivery_street': encrypter.decrypt(order.deliverystreet),
+            'delivery_town': encrypter.decrypt(order.deliverytown), 
+            'delivery_parish': encrypter.decrypt(order.deliveryparish), 
+            'checkout_by': empName,
+            'total':self.orderAccess.getTotalOnOrder(order.id)
+        }
+
     def __getOrderItemsDetails(self,orderId):
         orderItems = self.orderAccess.getItemsInOrder(orderId)
         response = []
@@ -207,13 +204,14 @@ class AccountManager:
                 total_weight = str(grocery.quantity * grocery.groceries.grams_per_unit) + " grams"
                 response.append (
                     {
-                        'grocery_id': str(grocery.grocery_id), \
-                        'quantity': str(grocery.quantity), \
-                        'cost_before_tax': str(cost_before_tax), \
-                        'name': grocery.groceries.name, \
-                        'total_weight': total_weight,\
-                        'GCT': str(GCT),\
-                        'SCT': str(SCT), \
+                        'grocery_id': str(grocery.grocery_id),
+                        'quantity': str(grocery.quantity),
+                        'cost_before_tax': str(cost_before_tax),
+                        'sku': encrypter.decrypt(grocery.sku),
+                        'name': grocery.groceries.name,
+                        'total_weight': total_weight,
+                        'GCT': str(GCT),
+                        'SCT': str(SCT),
                         'total': str(total)
                     }
                 )

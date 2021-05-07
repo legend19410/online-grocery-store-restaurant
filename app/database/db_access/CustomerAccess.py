@@ -14,10 +14,10 @@ class CustomerAccess:
             return False
 
     """register a customer to the db"""
-    def registerCustomer(self, firstName, lastName, telephone, email, gender, password, town, parish):
+    def registerCustomer(self, firstName, lastName, telephone, email, password, town, parish):
         customer = {}
         try:
-            customer = Customer(first_name=firstName, last_name=lastName, telephone=telephone, email=email, gender=gender, password=password, town=town, parish=parish)
+            customer = Customer(first_name, last_name, telephone, email, gender, password, parish)
             db.session.add(customer)
             db.session.commit()
             customer = self.getCustomerById(customer.id)
@@ -41,35 +41,35 @@ class CustomerAccess:
         customer = self.getCustomerById(customerId)
         if customer:
             if attribute == 'first_name':
-                customer.first_name = value
+                customer.first_name = encrypter.encrypt(value)
                 db.session.commit()
                 return self.getCustomerById(customerId)
             if attribute == 'last_name':
-                customer.last_name = value
+                customer.last_name = encrypter.encrypt(value)
                 db.session.commit()
                 return self.getCustomerById(customerId)
             if attribute == 'telephone':
-                customer.telephone = value
+                customer.telephone = encrypter.encrypt(value)
                 db.session.commit()
                 return self.getCustomerById(customerId)
             if attribute == 'email':
-                customer.email = value
+                customer.email = encrypter.encrypt(value)
                 db.session.commit()
                 return self.getCustomerById(customerId)
             if attribute == 'gender':
-                customer.gender = value
+                customer.gender = encrypter.encrypt(value)
                 db.session.commit()
                 return self.getCustomerById(customerId)
             if attribute == 'password':
-                customer.password = value
+                customer.password = generate_password_hash(value, method='pbkdf2:sha256:310000', salt_length=256)
                 db.session.commit()
                 return self.getCustomerById(customerId)
             if attribute == 'town':
-                customer.town = value
+                customer.town = encrypter.encrypt(value)
                 db.session.commit()
                 return self.getCustomerById(customerId)
             if attribute == 'parish':
-                customer.parish = value
+                customer.parish = encrypter.encrypt(value)
                 db.session.commit()
                 return self.getCustomerById(customerId)
 

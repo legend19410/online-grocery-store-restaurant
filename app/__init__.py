@@ -1,9 +1,11 @@
 import redis
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_wtf.csrf import CSRFProtect
 from .config import Config
+from .encrypt import Encrypt
 import logging
 from flask_jwt_extended import JWTManager
 
@@ -13,9 +15,9 @@ cors = CORS(app, resources={r"/*": {"origins": ["https://groceryscape.web.app"]}
 csrf = CSRFProtect(app)
 app.config.from_object(Config)
 uploaddir = app.config['UPLOAD_FOLDER']
+encrypter = Encrypt(app.config['ENCRYPTION_PASSWORD'])
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
-
 # Setup our redis connection for storing the blocklisted tokens. You will probably
 # want your redis instance configured to persist data to disk, so that a restart
 # does not cause your application to forget that a JWT was revoked.
