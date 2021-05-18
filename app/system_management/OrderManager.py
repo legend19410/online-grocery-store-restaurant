@@ -489,6 +489,7 @@ class OrderManager:
                         'grocery_id': str(order_item.grocery_id),
                         'photo': order_item.groceries.photo,
                         'category': order_item.groceries.category,
+                        'unit_price':str(order_item.groceries.cost_per_unit),
                         'sku': str(order_item.groceries.sku),
                         'inventory': str(order_item.groceries.quantity),
                         'quantity': str(order_item.quantity),
