@@ -372,30 +372,30 @@ class OrderManager:
             # Since it's a decline, stripe.error.CardError will be caught
             print(e.message)
             # Display error on client
-            self.orderAccess.deleteOrderByID(intent.metadata['order_id'])
+            self.orderAccess.deleteOrderByID(int(intent.metadata['order_id']))
             return {'msg': e.user_message, 'error':e.code}, 200
         except stripe.error.APIConnectionError as e:
 
             # Network communication with Stripe failed
             print(e.message)
-            self.orderAccess.deleteOrderByID(intent.metadata['order_id'])
+            self.orderAccess.deleteOrderByID(int(intent.metadata['order_id']))
             return {'msg':e.user_message, 'error':e.code}, 200
         except stripe.error.InvalidRequestError as e:
             # Invalid parameters were supplied to Stripe's API
             print(e.message)
-            self.orderAccess.deleteOrderByID(intent.metadata['order_id'])
+            self.orderAccess.deleteOrderByID(int(intent.metadata['order_id']))
             return {'msg':e.user_message, 'error':e.code}, 200
         except stripe.error.AuthenticationError as e:
             # Authentication with Stripe's API failed
             # (maybe you changed API keys recently)
             print(e.message)
-            self.orderAccess.deleteOrderByID(intent.metadata['order_id'])
+            self.orderAccess.deleteOrderByID(int(intent.metadata['order_id']))
             return {'msg':e.user_message, 'error':e.code}, 200
         except stripe.error.StripeError as e:
             # Display a very generic error to the user, and maybe send
             # yourself an email
             print(e.message)
-            self.orderAccess.deleteOrderByID(intent.metadata['order_id'])
+            self.orderAccess.deleteOrderByID(int(intent.metadata['order_id']))
             return {'msg':e.user_message, 'error':e.code}, 200
 
         return self.__generate_response(intent,mail)
