@@ -94,7 +94,7 @@ class OrderManager:
         
         state = True #tracks status order to knw if to delete
         if custId and deliverydate and deliverytimeslot and orderId:
-            if datetime.strptime(deliverydate,'%Y-%m-%d').date() < (datetime.now().date()+timedelta(days=2)):
+            if datetime.strptime(deliverydate,'%Y-%m-%d').date() < (datetime.now().date()+timedelta(days=3)):
                 if self.validSlot(deliverytimeslot, deliverydate):
                     order = self.orderAccess.scheduleDelivery(orderId,int(deliverytimeslot),deliverydate,int(custId))
                     if order:
