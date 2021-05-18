@@ -9,12 +9,20 @@ from ..system_management.OrderManager import OrderManager
 from ..database.db_access import customer_access,grocery_access, rating_access,\
                                     order_access, cart_access,order_groceries_access,payment_access,delivery_access
 from ..system_management.MLManager import MLManager
+<<<<<<< HEAD
 
+=======
+from ..database.db_access import rating_access
+from ..database.db_access import order_groceries_access
+from ..database.db_access import order_access
+from ..database.db_access import cart_access
+>>>>>>> parent of e2fb506... Moved getGroceryPairFreq to OrderAccess.py
 
 """All requests that are related to the management of a customer's account should come to this route"""
 manage_customer_account = Blueprint("manage_customer_account", __name__)
 
 """create an object that manages all operations on a customer's account"""
+<<<<<<< HEAD
 customer_manager = AccountManager(customer_access, MLManager(customer_access, order_access, rating_access, cart_access))
 
 """creates cart manager"""
@@ -23,6 +31,11 @@ cart_manager = CartManager(cart_access, grocery_access)
 """creates order manager"""
 order_manager = OrderManager(order_access, order_groceries_access, payment_access, delivery_access)
 
+=======
+customer_manager = AccountManager(customer_access, \
+    MLManager(customer_access, order_groceries_access, rating_access, cart_access), \
+    order_access)
+>>>>>>> parent of e2fb506... Moved getGroceryPairFreq to OrderAccess.py
 
 """handles customers' account requests"""
 @manage_customer_account.route('/signup', methods=['POST'])
