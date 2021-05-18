@@ -25,9 +25,7 @@ class DeliveryAccess:
     
     def getMaxDeliveriesPerTimeSlot(self):
         '''returns maximum allowed deliveries perslot'''
-        slots = MaxDeliveriesPerSlot.query.all()
-        for slot in slots:
-            slot = 20
-            db.session.commit()
         max_deliveries_per_slot = MaxDeliveriesPerSlot.query.first()
-        return max_deliveries_per_slot.max_deliveries_per_time_slot
+        max_deliveries_per_slot.max_deliveries_per_time_slot = 20
+        db.session.commit()
+        return max_deliveries_per_slot
