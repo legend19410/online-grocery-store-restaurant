@@ -28,4 +28,4 @@ class DeliveryAccess:
         max_deliveries_per_slot = MaxDeliveriesPerSlot.query.first()
         max_deliveries_per_slot.max_deliveries_per_time_slot = 20
         db.session.commit()
-        return max_deliveries_per_slot
+        return max_deliveries_per_slot.max_deliveries_per_time_slot
