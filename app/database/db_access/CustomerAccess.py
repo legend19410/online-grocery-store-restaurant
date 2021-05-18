@@ -96,7 +96,7 @@ class CustomerAccess:
 
         result = {}
         if (type(custId) == str):
-            orders = Order.query.filter(Order.customer_id==custId).all()
+            orders = Order.query.filter(Order.customer_id==custId, Order.status != 'CANCELLED').all()
             orderLst = [o.id for o in orders]
             groceries = OrderGroceries.query.filter(OrderGroceries.order_id.in_(orderLst)).all()
             for g in groceries:

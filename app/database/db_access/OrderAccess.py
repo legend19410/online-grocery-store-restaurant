@@ -241,8 +241,11 @@ class OrderAccess:
                 result[gid] = {}
                 pass
 
+        orders = Order.query.filter(Order.status != 'CANCELLED').all()
+        orderLst = [o.id for o in orders]
+        groceries = OrderGroceries.query.filter(OrderGroceries.order_id.in_(orderLst)).all()
+
         # Maping groceries to orders and vice versa
-        groceries = OrderGroceries.query.all()
         groceryOrder = {}
         orderGrocery = {}
         for g in groceries:
@@ -270,9 +273,12 @@ class OrderAccess:
         """ Returns a list of the total quantity of the grocery item that has
             ever been purchased """
 
+        orders = Order.query.filter(Order.status != 'CANCELLED').all()
+        orderLst = [o.id for o in orders]
+        quantities = OrderGroceries.query.filter(OrderGroceries.order_id.in_(orderLst)).all()
+
         result = {}
         gids = set()
-        quantities = OrderGroceries.query.all()
         if (groceryId == None):
             for q in quantities:
                 try:
