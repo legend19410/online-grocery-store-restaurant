@@ -509,6 +509,7 @@ class OrderManager:
             'formatted_delivery_date': order.deliverydate.strftime("%B %d %Y") if order.deliverydate else str(None),
             'delivery_timeslot': str(order.timeslot.start_time)+"-"+str(order.timeslot.end_time) if order.timeslot else str(None),
             'delivery_date': str(order.deliverydate),
+            'delivery_street': str(order.deliverystreet),
             'delivery_town': str(order.deliverytown), 
             'delivery_parish': str(order.deliveryparish), 
             'checkout_by': empName
