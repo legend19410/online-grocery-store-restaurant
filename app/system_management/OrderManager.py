@@ -11,7 +11,6 @@ class OrderManager:
         '''returns a preview or the order details from item in cart'''
         getParam = self.getRequestType(request)
         parish = str(getParam('parish'))
-        
         if order_preview:
             deliveryparish = self.deliveryAccess.getDeliveryParish(parish)
             order_preview['delivery_parish'] = str(deliveryparish.parish) 
@@ -20,8 +19,6 @@ class OrderManager:
             order_preview['total'] = order_preview['sub_total'] + float(delivery_cost)
             return order_preview
         return False
-
-
 
     def create_order(self,user,cart_items):
         '''create an order from the cart items'''
@@ -39,7 +36,6 @@ class OrderManager:
                     'customer':(order.customer.first_name + " "+ order.customer.last_name)
                 }
         return False
-    
 
     def cancelOrder(self,user, order_id):
         '''cancels an order'''
@@ -56,7 +52,6 @@ class OrderManager:
             return self.__getOrderDetails(cancelled_order, empName)
         return False
 
-
     def scheduleOrder(self, request, user):
         '''schedules the date and time that customer wants order to be delivered'''
         getParam = self.getRequestType(request)
@@ -64,7 +59,7 @@ class OrderManager:
         deliverydate = getParam('date')
         orderId = getParam('order_id')
         custId = user['cust_id']
-        
+
         if custId and deliverydate and deliverytimeslot and orderId:
             if datetime.strptime(deliverydate,'%Y-%m-%d').date()>(datetime.now().date()+timedelta(days=2)):
                 if self.validSlot(deliverytimeslot, deliverydate):
@@ -79,7 +74,6 @@ class OrderManager:
                 return {'msg':'no more orders can be scheduled for this slot', 'error':'create-0001'}, 200
             return {'msg':'a slot cannot be booked more than two days in advance', 'error':'create-0001'}, 200
         return  {'msg':'either date, timeslot or order_id is empty', 'error':'create-0001'}, 200
-    
 
     def getDeliveryTimeSlots(self):
         '''get all valid time slots within two days'''
@@ -116,7 +110,6 @@ class OrderManager:
             print(e)
             return {'msg':'', 'error':'ise-0001'}, 500
 
-
     def validSlot(self,deliverytimeslot, deliverydate):
         '''determines whether a slot is a valid delivery time slot.
             It is a valid slot if the time of day is offered and it hasn't reach capacity'''
@@ -133,7 +126,6 @@ class OrderManager:
         parish = getParam('parish')
         town = getParam('town')
         cust_id = user['cust_id']
-        
 
         order = self.orderAccess.setDeliveryLocation(int(cust_id),int(order_id),street, parish,town)
         if order:
@@ -146,12 +138,9 @@ class OrderManager:
             return self.__getOrderDetails(order,empName)
         return False
 
-
     def checkOutOrder(self,user, request):
-
         getParam = self.getRequestType(request)
         orderId = getParam('order_id')
-
         empId = user['emp_id']
 
         if orderId:
@@ -167,12 +156,12 @@ class OrderManager:
             else:
                 return order
         return False
-    
+
     def getOrderCustomer(self,user, orderId):
         # getParam = self.getRequestType(request)
         # orderId = getParam('order_id')
         cust_id = user['cust_id']
-        
+
         order = self.orderAccess.getOrderByIdCustomer(orderId, cust_id)
         if order:
             empFname = order.employee
@@ -181,15 +170,12 @@ class OrderManager:
                 empName = ( empFname.first_name+ " " +empLname.last_name )
             else:
                 empName = 'False'
-
             return self.__getOrderDetails(order,empName)
         return False
-    
 
     def getOrdersCustomer(self, user, request):
         '''return all the customers orders, filtered by criteria if provided'''
         getParam = self.getRequestType(request)
-            
         status = getParam('status')
 
         order_start_date = getParam('order_start_date')
@@ -203,7 +189,7 @@ class OrderManager:
         delivery_start_date = getParam('delivery_start_date')
         # if delivery_start_date is not None:
         #     delivery_start_date = delivery_start_date + " 00:00:00"
-        
+
         delivery_end_date = getParam('delivery_end_date')
         # if delivery_end_date is not None:
         #     delivery_end_date = delivery_end_date + " 23:59:59"
@@ -213,9 +199,9 @@ class OrderManager:
 
         cust_id = user['cust_id']
 
-        orders = self.orderAccess.getOrders(cust_id, status, order_start_date, order_end_date,\
-                                                    delivery_start_date, delivery_end_date, delivery_town,\
-                                                    delivery_parish)
+        orders = self.orderAccess.getOrders(cust_id, status, order_start_date, \
+                                order_end_date, delivery_start_date, \
+                                delivery_end_date, delivery_town, delivery_parish)
         response = []
         if orders:
             print('Orders',orders)
@@ -249,13 +235,13 @@ class OrderManager:
 
         if cust_id is None:
             cust_id = getParam('cust_id')
-            
+
         status = getParam('status')
 
         order_start_date = getParam('order_start_date')
         if order_start_date is not None:
             order_start_date = order_start_date + " 00:00:00"
-        
+
         order_end_date = getParam('order_end_date')
         if order_end_date is not None:
             order_end_date = order_end_date+" 23:59:59"
@@ -263,7 +249,7 @@ class OrderManager:
         delivery_start_date = getParam('delivery_start_date')
         # if delivery_start_date is not None:
         #     delivery_start_date = delivery_start_date + " 00:00:00"
-        
+
         delivery_end_date = getParam('delivery_end_date')
         # if delivery_end_date is not None:
         #     delivery_end_date = delivery_end_date + " 23:59:59"
@@ -272,9 +258,9 @@ class OrderManager:
         delivery_parish = getParam('delivery_parish')
 
 
-        orders = self.orderAccess.getOrders(cust_id, status, order_start_date, order_end_date,\
-                                                    delivery_start_date, delivery_end_date, delivery_town,\
-                                                    delivery_parish)
+        orders = self.orderAccess.getOrders(cust_id, status, order_start_date, \
+                                    order_end_date, delivery_start_date, \
+                                    delivery_end_date, delivery_town, delivery_parish)
 
         response = []
         if orders:
@@ -288,7 +274,7 @@ class OrderManager:
                 response.append(self.__getOrderDetails(order,empName))
 
         return response
-    
+
     def recordPayment(self,user,request):
         getParam = self.getRequestType(request)
         orderId = int(getParam('order_id'))
@@ -301,7 +287,6 @@ class OrderManager:
                     payment.order.customer.last_name) }
 
         return False
-
 
     def make_payment(self, user, request):
         '''processes credit card payment'''
@@ -336,7 +321,6 @@ class OrderManager:
 
         return self.__generate_response(intent)
 
-
     def __generate_response(self,intent):
         # Note that if your API version is before 2019-02-11, 'requires_action'
         # appears as 'requires_source_action'.
@@ -367,7 +351,6 @@ class OrderManager:
                     empName = 'False'
                 response.append(self.__getOrderDetails(order,empName))
         return response
-
 
     def __getOrderDetails(self, order,empName):
         order_items = []
@@ -414,7 +397,6 @@ class OrderManager:
         result['delivery_cost'] = str(delivery_cost)
         result['total'] = order_total_before_delivery_cost + float(delivery_cost)
         return result
-
 
     def getRequestType(self, request):
         if request.method == 'GET':

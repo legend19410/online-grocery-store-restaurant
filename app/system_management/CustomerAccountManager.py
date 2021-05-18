@@ -56,7 +56,6 @@ class AccountManager:
             return self.__getCustomerDetails(customer)
         return False
 
-
     def updateAccount(self, request, user):
 
         getParam = self.getRequestType(request)
@@ -72,7 +71,6 @@ class AccountManager:
             return self.__getCustomerDetails(customer)
         return False
 
-      
     def getRecommendedGroceries(self, custId):
         groceries = ''
         if self.customer_access.getCustomerById(custId):
@@ -82,15 +80,12 @@ class AccountManager:
             return False
         raise NameError
 
-
-
     def __getCustomerDetails(self, customer):
 
         return {"cust_id": str(customer.id), 'first_name': customer.first_name, 'last_name': customer.last_name, \
                         'telephone': customer.telephone, 'email': customer.email, 'gender': customer.gender, \
                         'town': customer.town, 'parish': customer.parish}
 
-                
     def getRequestType(self, request):
         if request.method == 'GET':
             return request.args.get

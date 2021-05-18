@@ -86,15 +86,14 @@ class CustomerAccess:
             return customer.cart_items
         else:
             return False
-          
-          
+
     def getTotalAmtPurchased(self, custId):
-        """ Returns the total amount of each item a customer has
-            purchased over the lifetime of the account. If a list
-            of IDs is provided then it returns the total amount
-            purchased for all those customers. If an empty list is
-            passed then it returns the total purchased for all
+        """ Returns the total amount of each item a customer has purchased over \
+            the lifetime of the account. If a list of IDs is provided then it \
+            returns the total amount purchased for all those customers. If an \
+            empty list is passed then it returns the total purchased for all \
             customers in the system """
+
         result = {}
         if (type(custId) == str):
             orders = Order.query.filter(Order.customer_id==custId).all()

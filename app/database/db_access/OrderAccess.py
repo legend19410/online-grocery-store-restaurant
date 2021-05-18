@@ -34,7 +34,6 @@ class OrderAccess:
         except:
             return False
 
-
     def addItemsToOrder(self, cart_summary,cust_id):
         '''add items to created order'''
         order = self.createOrder(cust_id)
@@ -44,7 +43,6 @@ class OrderAccess:
             db.session.add(orderGroceries)
             db.session.commit()
         return order
-    
 
     def updateStatus(self,orderId, status):
         order = self.getOrderById(orderId)
@@ -55,9 +53,7 @@ class OrderAccess:
         else:
             return  False
 
-
     def scheduleDelivery(self, orderId,timeslot, deliverydate,custId):
-
         order = self.getOrderById(orderId)
         if order:
             if order.customer_id == custId:
@@ -71,14 +67,11 @@ class OrderAccess:
         else:
             return False
 
-    
-
     def getDeliveryTimeSlotCount(self, deliverytimeslot, deliverydate):
         date_obj = datetime.strptime('2020-02-02','%Y-%m-%d').date()
         count = db.session.query(func.count(Order.deliverytimeslot)).filter(and_(
             Order.deliverytimeslot==deliverytimeslot,Order.deliverydate==date_obj)).first()[0]
         return count
-
 
     def checkoutOrder(self, orderId, employee):
         order = self.getOrderById(orderId)
@@ -98,18 +91,17 @@ class OrderAccess:
         except:
             return False
 
-
     def getOrders(self,custId=None, status=None, min_order_timestamp=None,\
                             max_order_timestamp=None, min_delivery_date=None,\
                             max_delivery_date=None, delivery_town=None,delivery_parish=None):
-        
+
         if status is None:
             status = ''
         status = '%{}%'.format(status)
 
         if min_order_timestamp is None:
             min_order_timestamp = datetime(1970, 1, 1,tzinfo=timezone.utc)
-        
+
         if min_delivery_date is None:
             min_delivery_date = date(1970, 1, 1)
 
@@ -225,7 +217,78 @@ class OrderAccess:
 
     # def getTotalOnOrder(self, orderId):
     #     return OrderGroceriesAccess(self, GroceryAccess(), CustomerAccess()).getTotalOnOrder(orderId)
-    
-    
+
     def getDeliveryCost(self,orderId):
         return OrderGroceriesAccess(self, GroceryAccess(), CustomerAccess()).getDeliveryCost(orderId)
+
+    def getGroceryPairFreq(self, groceryId):
+        """ Returns a dictionary of the number of times a pair of groceries
+            occurs in the orders made """
+
+        def countPairs(gid, groceryOrder, orderGrocery, result):
+            try:
+                for o in groceryOrder[gid]:
+                    for g in orderGrocery[o]:
+                        if (gid != g):
+                            try:
+                                temp = result[gid][g]
+                            except KeyError:
+                                result[gid] = {}
+                                result[gid][g] = 0
+                            result[gid][g] += 1
+            except KeyError:
+                # The grocery likely has never been purchased before
+                result[gid] = {}
+                pass
+
+        # Maping groceries to orders and vice versa
+        groceries = OrderGroceries.query.all()
+        groceryOrder = {}
+        orderGrocery = {}
+        for g in groceries:
+            try:
+                groceryOrder[g.grocery_id].add(g.order_id)
+            except KeyError:
+                groceryOrder[g.grocery_id] = set()
+                groceryOrder[g.grocery_id].add(g.order_id)
+
+            try:
+                orderGrocery[g.order_id].add(g.grocery_id)
+            except KeyError:
+                orderGrocery[g.order_id] = set()
+                orderGrocery[g.order_id].add(g.grocery_id)
+
+        result = {}
+        if (type(groceryId) == str):
+            countPairs(groceryId, groceryOrder, orderGrocery, result)
+        elif (type(groceryId) == list):
+            for gid in groceryId:
+                countPairs(gid, groceryOrder, orderGrocery, result)
+        return result
+
+    def getTotalQuantityPurchased(groceryId=None):
+        """ Returns a list of the total quantity of the grocery item that has
+            ever been purchased """
+
+        result = {}
+        gids = set()
+        quantities = OrderGroceries.query.all()
+        if (groceryId == None):
+            for q in quantities:
+                try:
+                    result[q.grocery_id] += q.quantity
+                except KeyError:
+                    result[q.grocery_id] = q.quantity
+            return result
+        elif (type(groceryId) == str):
+            gids.add(groceryId)
+        elif(type(groceryId) == list):
+            gids.update(groceryId)
+
+        for q in quantities:
+            if (q.grocery_id in gids):
+                try:
+                    result[q.grocery_id] += q.quantity
+                except KeyError:
+                    result[q.grocery_id] = q.quantity
+        return result

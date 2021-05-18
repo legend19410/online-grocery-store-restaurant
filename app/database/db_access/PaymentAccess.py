@@ -7,9 +7,8 @@ class PaymentAccess:
         self.orderAccess = orderAccess
         self.orderGroceriesAccess = orderGroceriesAccess
         self.employeeAccess = employeeAccess
-        
-    def recordPayment(self, orderId, empId, amountTendered):
 
+    def recordPayment(self, orderId, empId, amountTendered):
         total = self.orderGroceriesAccess.getTotalOnOrder(orderId)
         change = amountTendered - float(total) 
         if change >= 0:
@@ -21,7 +20,3 @@ class PaymentAccess:
             return payment
         else:
             return False
-    
-    
-
-

@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 from sqlalchemy import exc
 from ... import db
 from ..Models import OrderGroceries
@@ -95,4 +93,3 @@ class OrderGroceriesAccess:
             for gid in groceryId:
                 countPairs(gid, groceryOrder, orderGrocery, result)
         return result
->>>>>>> parent of e2fb506... Moved getGroceryPairFreq to OrderAccess.py

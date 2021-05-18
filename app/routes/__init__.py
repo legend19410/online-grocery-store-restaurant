@@ -15,26 +15,13 @@ from .CartRoute import manage_cart
 from .RatingRoute import manage_rating
 from .OrderRoute import manage_order
 from app.system_management.MLManager import MLManager
-<<<<<<< HEAD
 
-from app.database.db_access import customer_access,rating_access,grocery_access,order_access,\
-                                    delivery_access
-
-
-from ..system_management.CustomerAccountManager import AccountManager
-account_manager = AccountManager(customer_access, MLManager(customer_access, order_access, rating_access, cart_access))
-=======
-from app.database.db_access import rating_access
-from app.database.db_access import order_groceries_access
-from app.database.db_access import order_access
-from app.database.db_access import cart_access
+from app.database.db_access import customer_access, rating_access, cart_access, \
+                                    order_access, delivery_access
 
 from ..system_management.CustomerAccountManager import AccountManager
 account_manager = AccountManager(customer_access, \
-    MLManager(customer_access, order_groceries_access, rating_access, cart_access), \
-    order_access)
->>>>>>> parent of e2fb506... Moved getGroceryPairFreq to OrderAccess.py
-
+    MLManager(customer_access, order_access, rating_access, cart_access))
 
 """register blueprints"""
 app.register_blueprint(manage_customer_account, url_prefix="/manage_customer_account")
