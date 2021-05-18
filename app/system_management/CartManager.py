@@ -107,6 +107,7 @@ class CartManager:
                 'category': grocery.cart_items.category,
                 'inventory': str(grocery.cart_items.quantity),
                 'quantity': str(grocery.quantity),
+                'unit_price': str(grocery.cart_items.cost_per_unit),
                 'cost_before_tax': str(cost_before_tax),
                 'name':grocery.cart_items.name,
                 'total_weight':total_weight,
