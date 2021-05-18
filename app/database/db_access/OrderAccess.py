@@ -112,8 +112,9 @@ class OrderAccess:
 
     def getOrders(self,custId=None, status=None, min_order_timestamp=None,\
                             max_order_timestamp=None, min_delivery_date=None,\
-                            max_delivery_date=None, delivery_town=None,delivery_parish=None, payment_type=None):
-        
+                            max_delivery_date=None, delivery_street=None, \
+                            delivery_town=None,delivery_parish=None, payment_type=None):
+
         if status is None:
             status = ''
         status = '%{}%'.format(status)
@@ -139,6 +140,12 @@ class OrderAccess:
         else:
             max_delivery_date = datetime.strptime(max_delivery_date, '%Y-%m-%d')
 
+        street_provided = ''
+        if delivery_street is None:
+            street_provided = None
+            delivery_street = ''
+        delivery_street = '%{}%'.format(delivery_street)
+
         town_provided = ''
         if delivery_town is None:
             town_provided = None
@@ -163,6 +170,7 @@ class OrderAccess:
                 and_(
                     Order.customer_id==custId,\
                     Order.status.ilike(status),\
+                    or_(Order.deliverystreet.ilike(delivery_street), Order.deliverystreet == street_provided),\
                     or_(Order.deliverytown.ilike(delivery_town), Order.deliverytown == town_provided),\
                     or_(Order.deliveryparish.ilike(delivery_parish), Order.deliveryparish == parish_provided),\
                     or_(Order.payment_type.ilike(payment_type), Order.payment_type == payment_type_provided),\
@@ -177,6 +185,7 @@ class OrderAccess:
             orders = Order.query.join(Customer, Order.customer_id==Customer.id).filter(
                 and_(
                     Order.status.ilike(status),\
+                    or_(Order.deliverystreet.ilike(delivery_street), Order.deliverystreet == street_provided),\
                     or_(Order.deliverytown.ilike(delivery_town), Order.deliverytown == town_provided),\
                     or_(Order.deliveryparish.ilike(delivery_parish), Order.deliveryparish == parish_provided),\
                     or_(Order.payment_type.ilike(payment_type), Order.payment_type == payment_type_provided),\
